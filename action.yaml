@@ -19,6 +19,9 @@ inputs:
     required: false
     default: "22"
 
+  bastion-known-host:
+    required: false
+
   server-host:
     required: true
 
@@ -28,6 +31,9 @@ inputs:
   server-port:
     required: false
     default: "22"
+
+  server-known-host:
+    required: false
 
   strict-host-checking:
     required: false
@@ -41,9 +47,29 @@ runs:
       shell: bash
       run: |
         mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
 
         echo "${{ inputs.ssh-private-key }}" > ~/.ssh/ssh-key
         chmod 600 ~/.ssh/ssh-key
+
+        # Validate secure mode requirements
+        if [ "${{ inputs.strict-host-checking }}" = "yes" ]; then
+          if [ -z "${{ inputs.bastion-known-host }}" ]; then
+            echo "ERROR: bastion-known-host is required when strict-host-checking=yes"
+            exit 1
+          fi
+
+          if [ -z "${{ inputs.server-known-host }}" ]; then
+            echo "ERROR: server-known-host is required when strict-host-checking=yes"
+            exit 1
+          fi
+
+          touch ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+          echo "${{ inputs.bastion-known-host }}" >> ~/.ssh/known_hosts
+          echo "${{ inputs.server-known-host }}" >> ~/.ssh/known_hosts
+        fi
 
         cat > ~/.ssh/config <<EOF
         Host bastion
