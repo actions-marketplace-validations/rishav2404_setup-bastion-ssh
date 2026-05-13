@@ -1,5 +1,9 @@
 name: Setup Bastion SSH
-description: Configure SSH access to a private(target) server through bastion host
+description: Configure SSH access to private servers through a bastion/jump host
+
+branding:
+  icon: terminal
+  color: gray-dark
 
 inputs:
   ssh-private-key:
